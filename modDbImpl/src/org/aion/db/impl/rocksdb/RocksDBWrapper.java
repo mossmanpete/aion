@@ -26,8 +26,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.db.impl.AbstractDB;
 import org.rocksdb.BlockBasedTableConfig;
@@ -220,23 +220,17 @@ public class RocksDBWrapper extends AbstractDB {
     }
 
     @Override
-    public Set<byte[]> keys() {
-        Set<byte[]> set = new HashSet<>();
+    public Iterator<byte[]> keys() {
         check();
 
         try (RocksIterator itr = db.newIterator()) {
-            itr.seekToFirst();
-            // extract keys
-            while (itr.isValid()) {
-                set.add(itr.key());
-                itr.next();
-            }
+            return new RocksDBIteratorWrapper(itr);
         } catch (Exception e) {
             LOG.error("Unable to extract keys from database " + this.toString() + ".", e);
         }
 
         // empty when retrieval failed
-        return set;
+        return new HashSet<byte[]>().iterator();
     }
 
     @Override

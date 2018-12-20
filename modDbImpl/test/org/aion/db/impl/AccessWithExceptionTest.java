@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitParamsRunner.class)
 public class AccessWithExceptionTest {
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
 
     @BeforeClass
     public static void setup() {

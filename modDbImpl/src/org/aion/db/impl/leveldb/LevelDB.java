@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.aion.base.util.ByteArrayWrapper;
@@ -289,7 +290,7 @@ public class LevelDB extends AbstractDB {
     }
 
     @Override
-    public Set<byte[]> keys() {
+    public Iterator<byte[]> keys() {
         Set<byte[]> set = new HashSet<>();
 
         check();
@@ -304,7 +305,8 @@ public class LevelDB extends AbstractDB {
         }
 
         // empty when retrieval failed
-        return set;
+        // TODO
+        return set.iterator();
     }
 
     @Override

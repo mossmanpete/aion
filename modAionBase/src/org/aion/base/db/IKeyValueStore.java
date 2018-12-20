@@ -36,9 +36,9 @@
 package org.aion.base.db;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Functionality for a key-value store allowing itemized updates.
@@ -61,13 +61,13 @@ public interface IKeyValueStore<KEY, VALUE> extends AutoCloseable {
     boolean isEmpty();
 
     /**
-     * Returns the set of keys stored in the database.
+     * Returns an {@link Iterator} over the set of keys stored in the database.
      *
-     * @return a set containing all the stored keys
+     * @return an iterator over the set of stored keys
      * @throws RuntimeException if the data store is closed
-     * @apiNote Returns an empty set if the database keys could not be retrieved.
+     * @apiNote Returns an empty iterator if the database keys could not be retrieved.
      */
-    Set<KEY> keys();
+    Iterator<KEY> keys();
 
     /**
      * Retrieves a value from the data store, wrapped in an {@link Optional} object. It is fulfilled

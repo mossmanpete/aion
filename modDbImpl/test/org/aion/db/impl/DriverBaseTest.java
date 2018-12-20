@@ -44,9 +44,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.aion.base.db.IByteArrayKeyValueDatabase;
 import org.aion.db.generic.DatabaseWithCache;
 import org.aion.db.generic.LockedDatabase;
@@ -457,7 +457,7 @@ public class DriverBaseTest {
             // ensure persistence
             assertThat(db.get(k1).get()).isEqualTo(v1);
             assertThat(db.isEmpty()).isFalse();
-            assertThat(db.keys().size()).isEqualTo(1);
+            assertThat(db.keys().hasNext()).isTrue();
             assertThat(db.isLocked()).isFalse();
 
             // deleting data
@@ -479,7 +479,7 @@ public class DriverBaseTest {
             // ensure absence
             assertThat(db.get(k1).isPresent()).isFalse();
             assertThat(db.isEmpty()).isTrue();
-            assertThat(db.keys().size()).isEqualTo(0);
+            assertThat(db.keys().hasNext()).isFalse();
             assertThat(db.isLocked()).isFalse();
         }
     }
@@ -517,7 +517,7 @@ public class DriverBaseTest {
             assertThat(db.get(k2).get()).isEqualTo(v2);
             assertThat(db.get(k3).get()).isEqualTo(v3);
             assertThat(db.isEmpty()).isFalse();
-            assertThat(db.keys().size()).isEqualTo(3);
+            assertThat(db.keys().hasNext()).isTrue();
             assertThat(db.isLocked()).isFalse();
 
             // updating data
@@ -549,7 +549,7 @@ public class DriverBaseTest {
             assertThat(db.get(k2).get()).isEqualTo(v3);
             assertThat(db.get(k3).isPresent()).isFalse();
             assertThat(db.isEmpty()).isFalse();
-            assertThat(db.keys().size()).isEqualTo(2);
+            assertThat(db.keys().hasNext()).isTrue();
             assertThat(db.isLocked()).isFalse();
 
             // deleting data
@@ -574,7 +574,7 @@ public class DriverBaseTest {
             assertThat(db.get(k2).isPresent()).isFalse();
             assertThat(db.get(k3).isPresent()).isFalse();
             assertThat(db.isEmpty()).isTrue();
-            assertThat(db.keys().size()).isEqualTo(0);
+            assertThat(db.keys().hasNext()).isFalse();
             assertThat(db.isLocked()).isFalse();
         }
     }
@@ -753,11 +753,11 @@ public class DriverBaseTest {
     @Test
     public void testKeys() {
         // keys shouldn't be null even when empty
-        Set<byte[]> keys = db.keys();
+        Iterator<byte[]> keys = db.keys();
         assertThat(db.isLocked()).isFalse();
         assertThat(db.isEmpty()).isTrue();
         assertThat(keys).isNotNull();
-        assertThat(keys.size()).isEqualTo(0);
+        assertThat(keys.hasNext()).isFalse();
 
         // checking after put
         db.put(k1, v1);
@@ -767,16 +767,19 @@ public class DriverBaseTest {
 
         keys = db.keys();
         assertThat(db.isLocked()).isFalse();
-        assertThat(keys.size()).isEqualTo(2);
 
         // because of byte[], set.contains() does not work as expected
-        int count = 0;
-        for (byte[] k : keys) {
+        int countIn = 0, countOut = 0;
+        while (keys.hasNext()) {
+            byte[] k = keys.next();
             if (Arrays.equals(k1, k) || Arrays.equals(k2, k)) {
-                count++;
+                countIn++;
+            } else {
+                countOut++;
             }
         }
-        assertThat(count).isEqualTo(2);
+        assertThat(countIn).isEqualTo(2);
+        assertThat(countOut).isEqualTo(0);
 
         // checking after delete
         db.delete(k2);
@@ -784,15 +787,19 @@ public class DriverBaseTest {
 
         keys = db.keys();
         assertThat(db.isLocked()).isFalse();
-        assertThat(keys.size()).isEqualTo(1);
 
-        count = 0;
-        for (byte[] k : keys) {
+        countIn = 0;
+        countOut = 0;
+        while (keys.hasNext()) {
+            byte[] k = keys.next();
             if (Arrays.equals(k1, k)) {
-                count++;
+                countIn++;
+            } else {
+                countOut++;
             }
         }
-        assertThat(count).isEqualTo(1);
+        assertThat(countIn).isEqualTo(1);
+        assertThat(countOut).isEqualTo(0);
 
         // checking after putBatch
         Map<byte[], byte[]> ops = new HashMap<>();
@@ -806,22 +813,26 @@ public class DriverBaseTest {
 
         keys = db.keys();
         assertThat(db.isLocked()).isFalse();
-        assertThat(keys.size()).isEqualTo(2);
 
-        count = 0;
-        for (byte[] k : keys) {
+        countIn = 0;
+        countOut = 0;
+        while (keys.hasNext()) {
+            byte[] k = keys.next();
             if (Arrays.equals(k2, k) || Arrays.equals(k3, k)) {
-                count++;
+                countIn++;
+            } else {
+                countOut++;
             }
         }
-        assertThat(count).isEqualTo(2);
+        assertThat(countIn).isEqualTo(2);
+        assertThat(countOut).isEqualTo(0);
 
         // checking after deleteBatch
         db.deleteBatch(ops.keySet());
 
         keys = db.keys();
         assertThat(db.isLocked()).isFalse();
-        assertThat(keys.size()).isEqualTo(0);
+        assertThat(keys.hasNext()).isFalse();
     }
 
     @Test
@@ -889,7 +900,7 @@ public class DriverBaseTest {
             // ensure lack of persistence
             assertThat(db.get(k1).isPresent()).isFalse();
             assertThat(db.isEmpty()).isTrue();
-            assertThat(db.keys().size()).isEqualTo(0);
+            assertThat(db.keys().hasNext()).isFalse();
             assertThat(db.isLocked()).isFalse();
 
             // deleting data
@@ -910,7 +921,7 @@ public class DriverBaseTest {
             // ensure lack of persistence of delete
             assertThat(db.get(k1).get()).isEqualTo(v1);
             assertThat(db.isEmpty()).isFalse();
-            assertThat(db.keys().size()).isEqualTo(1);
+            assertThat(db.keys().hasNext()).isTrue();
             assertThat(db.isLocked()).isFalse();
 
             // batch update
@@ -949,7 +960,7 @@ public class DriverBaseTest {
             assertThat(db.get(k2).get()).isEqualTo(v2);
             assertThat(db.get(k3).get()).isEqualTo(v3);
             assertThat(db.isEmpty()).isFalse();
-            assertThat(db.keys().size()).isEqualTo(2);
+            assertThat(db.keys().hasNext()).isTrue();
             assertThat(db.isLocked()).isFalse();
 
             // batch delete
@@ -968,7 +979,7 @@ public class DriverBaseTest {
             assertThat(db.get(k2).get()).isEqualTo(v2);
             assertThat(db.get(k3).get()).isEqualTo(v3);
             assertThat(db.isEmpty()).isFalse();
-            assertThat(db.keys().size()).isEqualTo(2);
+            assertThat(db.keys().hasNext()).isTrue();
             assertThat(db.isLocked()).isFalse();
         }
     }
