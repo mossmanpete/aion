@@ -12,6 +12,7 @@ dependencies {
     compile project(':modTxPoolImpl')
     compile files('../lib/libnsc.jar')
     compile files('../lib/libnzmq.jar')
+    compile files('../lib/org-aion-avm-core.jar')
     compile 'org.slf4j:slf4j-api:1.7.25'
     
     testCompile 'junit:junit:4.12'

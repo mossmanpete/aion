@@ -26,6 +26,7 @@ dependencies {
     compile project(':aion_api')
     compile project(':aion_fastvm')
     compile files('../lib/libJson.jar')
+    compile files('../lib/org-aion-avm-rt.jar')
     compile 'info.picocli:picocli:3.6.1'
 
     testCompile project(path: ':modTxPoolImpl')
